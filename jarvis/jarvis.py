@@ -1,4 +1,3 @@
-
 import pyttsx3
 import speech_recognition as sr
 import webbrowser
@@ -50,6 +49,9 @@ if __name__ == '__main__':
                 age = "i am fine and i hope ou are also fine"
                 text_to_speech(age)
 
+            elif "how r u" in data1:
+                age = "i am fine and i hope ou are also fine"
+                text_to_speech(age)
 
             elif "old are you" in data1:
                 age = "i am one day old"
