@@ -1,0 +1,104 @@
+[2026-10-20 13:01:28] [ATTACKER] [SETTINGS] {'mode': 'forward', 'auto_find': '1122', 'auto_replace': '9999'}
+[2026-10-20 13:02:10] [RECEIVER] [VALID] message='Send 100 rupees to account 75684397657' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:02:10] [ATTACKER] [VALID] forward: Forwarded: "Send 100 rupees to account 75684397657"
+[2026-10-20 13:02:10] [SENDER] [SENT] message='Send 100 rupees to account 75684397657' signed=True
+[2026-10-20 13:02:12] [RECEIVER] [VALID] message='Send 100 rupees to account 75684397657' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:02:12] [ATTACKER] [VALID] forward: Forwarded: "Send 100 rupees to account 75684397657"
+[2026-10-20 13:02:12] [SENDER] [SENT] message='Send 100 rupees to account 75684397657' signed=True
+[2026-10-20 13:02:19] [RECEIVER] [VALID] message='Send 100 rupees to account 75684397657' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:02:19] [ATTACKER] [VALID] forward: Forwarded: "Send 100 rupees to account 75684397657"
+[2026-10-20 13:02:19] [SENDER] [SENT] message='Send 100 rupees to account 75684397657' signed=True
+[2026-10-20 13:02:43] [RECEIVER] [REPLAY] message='Send 100 rupees to account 75684397657' reason='This message was already received. Replay attack detected.'
+[2026-10-20 13:02:43] [ATTACKER] [REPLAY] replay: Replayed old packet: "Send 100 rupees to account 75684397657"
+[2026-10-20 13:03:38] [ATTACKER] [SETTINGS] {'mode': 'auto', 'auto_find': '1122', 'auto_replace': '9999'}
+[2026-10-20 13:04:11] [RECEIVER] [VALID] message='Send 100 rupees to account 75684397657' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:04:11] [ATTACKER] [VALID] forward: Forwarded: "Send 100 rupees to account 75684397657"
+[2026-10-20 13:04:11] [SENDER] [SENT] message='Send 100 rupees to account 75684397657' signed=True
+[2026-10-20 13:04:33] [ATTACKER] [SETTINGS] {'mode': 'auto', 'auto_find': '1122', 'auto_replace': '100000'}
+[2026-10-20 13:04:38] [ATTACKER] [SETTINGS] {'mode': 'auto', 'auto_find': '1122', 'auto_replace': '100000'}
+[2026-10-20 13:05:14] [ATTACKER] [SETTINGS] {'mode': 'manual', 'auto_find': '1122', 'auto_replace': '100000'}
+[2026-10-20 13:05:42] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 75684397657"
+[2026-10-20 13:05:42] [SENDER] [SENT] message='Send 500 rupees to account 75684397657' signed=True
+[2026-10-20 13:06:03] [RECEIVER] [TAMPERED] message='Send 500 rupees to account 75684397657' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-20 13:06:03] [ATTACKER] [TAMPERED] forge: Modified message + signed with attacker key: "Send 500 rupees to account 75684397657"
+[2026-10-20 13:06:53] [ATTACKER] [HELD] intercept: Holding message: "Send 700 rupees to account 75684397657"
+[2026-10-20 13:06:53] [SENDER] [SENT] message='Send 700 rupees to account 75684397657' signed=True
+[2026-10-20 13:06:58] [RECEIVER] [NO_SIGNATURE] message='Send 700 rupees to account 75684397657' reason='Message has no digital signature. Rejected.'
+[2026-10-20 13:06:58] [ATTACKER] [NO_SIGNATURE] strip: Modified message + removed signature: "Send 700 rupees to account 75684397657"
+[2026-10-20 13:07:46] [ATTACKER] [HELD] intercept: Holding message: "Send 700 rupees to account 7568"
+[2026-10-20 13:07:46] [SENDER] [SENT] message='Send 700 rupees to account 7568' signed=True
+[2026-10-20 13:07:49] [RECEIVER] [VALID] message='Send 700 rupees to account 7568' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:07:49] [ATTACKER] [VALID] modify: Modified message (kept old signature): "Send 700 rupees to account 7568"
+[2026-10-20 13:08:01] [ATTACKER] [HELD] intercept: Holding message: "Send 700 rupees to account 7568"
+[2026-10-20 13:08:01] [SENDER] [SENT] message='Send 700 rupees to account 7568' signed=True
+[2026-10-20 13:10:23] [RECEIVER] [EXPIRED] message='Send 700 rupees to account 7568' reason='Message is too old (142 seconds). Possible replay attack.'
+[2026-10-20 13:10:23] [ATTACKER] [EXPIRED] modify: Modified message (kept old signature): "Send 700 rupees to account 7568"
+[2026-10-20 13:10:35] [ATTACKER] [HELD] intercept: Holding message: "Send 700 rupees to account 7568"
+[2026-10-20 13:10:35] [SENDER] [SENT] message='Send 700 rupees to account 7568' signed=True
+[2026-10-20 13:10:53] [RECEIVER] [VALID] message='Send 700 rupees to account 7568' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:10:53] [ATTACKER] [VALID] modify: Modified message (kept old signature): "Send 700 rupees to account 7568"
+[2026-10-20 13:13:18] [ATTACKER] [HELD] intercept: Holding message: "Send 700 rupees to account 7568"
+[2026-10-20 13:13:18] [SENDER] [SENT] message='Send 700 rupees to account 7568' signed=True
+[2026-10-20 13:13:41] [RECEIVER] [VALID] message='Send 700 rupees to account 7568' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-20 13:13:41] [ATTACKER] [VALID] modify: Modified message (kept old signature): "Send 700 rupees to account 7568"
+[2026-10-20 13:13:48] [RECEIVER] [REPLAY] message='Send 700 rupees to account 7568' reason='This message was already received. Replay attack detected.'
+[2026-10-20 13:13:48] [ATTACKER] [REPLAY] replay: Replayed old packet: "Send 700 rupees to account 7568"
+[2026-10-20 13:18:20] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 9075684"
+[2026-10-20 13:18:20] [SENDER] [SENT] message='Send 500 rupees to account 9075684' signed=True
+[2026-10-20 13:19:35] [RECEIVER] [EXPIRED] message='Send 500 rupees to account 9075684' reason='Message is too old (75 seconds). Possible replay attack.'
+[2026-10-20 13:19:35] [ATTACKER] [EXPIRED] modify: Modified message (kept old signature): "Send 500 rupees to account 9075684"
+[2026-10-20 13:20:54] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 9075684"
+[2026-10-20 13:20:54] [SENDER] [SENT] message='Send 500 rupees to account 9075684' signed=True
+[2026-10-20 13:21:09] [RECEIVER] [NO_SIGNATURE] message='Send 500 rupees to account 9075684' reason='Message has no digital signature. Rejected.'
+[2026-10-20 13:21:09] [ATTACKER] [NO_SIGNATURE] strip: Modified message + removed signature: "Send 500 rupees to account 9075684"
+[2026-10-20 13:21:17] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 9075684"
+[2026-10-20 13:21:17] [SENDER] [SENT] message='Send 500 rupees to account 9075684' signed=True
+[2026-10-20 13:21:20] [RECEIVER] [TAMPERED] message='Send 500 rupees to account 9075684' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-20 13:21:20] [ATTACKER] [TAMPERED] forge: Modified message + signed with attacker key: "Send 500 rupees to account 9075684"
+[2026-10-20 13:21:24] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 9075684"
+[2026-10-20 13:21:24] [SENDER] [SENT] message='Send 500 rupees to account 9075684' signed=True
+[2026-10-20 13:21:29] [ATTACKER] [DROPPED] drop: Dropped: "Send 500 rupees to account 9075684"
+[2026-10-20 13:23:37] [ATTACKER] [HELD] intercept: Holding message: "Send 500 rupees to account 9075684"
+[2026-10-20 13:23:37] [SENDER] [SENT] message='Send 500 rupees to account 9075684' signed=True
+[2026-10-20 13:43:41] [ATTACKER] [HELD] intercept: Holding message: "Send 5000 rupees to account 1122"
+[2026-10-20 13:43:41] [SENDER] [SENT] message='Send 5000 rupees to account 1122' signed=True
+[2026-10-20 13:43:50] [RECEIVER] [TAMPERED] message='Send 500 rupees to account 1129' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-20 13:43:50] [ATTACKER] [TAMPERED] modify: Modified message (kept old signature): "Send 500 rupees to account 1129"
+[2026-10-20 13:44:13] [ATTACKER] [HELD] intercept: Holding message: "Meeting at 8 PM today"
+[2026-10-20 13:44:13] [SENDER] [SENT] message='Meeting at 8 PM today' signed=True
+[2026-10-20 13:44:19] [RECEIVER] [TAMPERED] message='Meeting at 10 PM today' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-20 13:44:19] [ATTACKER] [TAMPERED] modify: Modified message (kept old signature): "Meeting at 10 PM today"
+[2026-10-25 19:45:59] [ATTACKER] [HELD] intercept: Holding message: "Send 1000 rupees to account 90641"
+[2026-10-25 19:45:59] [SENDER] [SENT] message='Send 1000 rupees to account 90641' signed=True
+[2026-10-25 19:46:14] [RECEIVER] [TAMPERED] message='Send 2000 rupees to account 90645' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-25 19:46:14] [ATTACKER] [TAMPERED] modify: Modified message (kept old signature): "Send 2000 rupees to account 90645"
+[2026-10-25 19:46:32] [ATTACKER] [HELD] intercept: Holding message: "Send 1000 rupees to account 90641"
+[2026-10-25 19:46:32] [SENDER] [SENT] message='Send 1000 rupees to account 90641' signed=True
+[2026-10-25 19:46:37] [RECEIVER] [TAMPERED] message='Send 1000 rupees to account 90641' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-25 19:46:37] [ATTACKER] [TAMPERED] forge: Modified message + signed with attacker key: "Send 1000 rupees to account 90641"
+[2026-10-25 19:46:48] [ATTACKER] [HELD] intercept: Holding message: "Meeting at 5 PM today"
+[2026-10-25 19:46:48] [SENDER] [SENT] message='Meeting at 5 PM today' signed=True
+[2026-10-25 19:46:56] [RECEIVER] [TAMPERED] message='Meeting at 6 PM today' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-25 19:46:56] [ATTACKER] [TAMPERED] modify: Modified message (kept old signature): "Meeting at 6 PM today"
+[2026-10-25 19:47:13] [ATTACKER] [HELD] intercept: Holding message: "Approved. Please proceed."
+[2026-10-25 19:47:13] [SENDER] [SENT] message='Approved. Please proceed.' signed=True
+[2026-10-25 19:47:17] [RECEIVER] [NO_SIGNATURE] message='Approved. Please proceed.' reason='Message has no digital signature. Rejected.'
+[2026-10-25 19:47:17] [ATTACKER] [NO_SIGNATURE] strip: Modified message + removed signature: "Approved. Please proceed."
+[2026-10-25 19:47:25] [ATTACKER] [HELD] intercept: Holding message: "Send 5000 rupees to account 1122"
+[2026-10-25 19:47:25] [SENDER] [SENT] message='Send 5000 rupees to account 1122' signed=True
+[2026-10-25 19:47:33] [RECEIVER] [VALID] message='Send 5000 rupees to account 1122' reason='Signature verified. Message is authentic and fresh.'
+[2026-10-25 19:47:33] [ATTACKER] [VALID] forward: Forwarded without change: "Send 5000 rupees to account 1122"
+[2026-10-25 19:58:25] [ATTACKER] [HELD] intercept: Holding message: "Send 5000 rupees to account 1122"
+[2026-10-25 19:58:25] [SENDER] [SENT] message='Send 5000 rupees to account 1122' signed=True
+[2026-10-25 19:58:33] [RECEIVER] [TAMPERED] message='Send 2000 rupees to account 1189' reason='Signature does not match. Message was modified or not signed by Rahul.'
+[2026-10-25 19:58:33] [ATTACKER] [TAMPERED] modify: Modified message (kept old signature): "Send 2000 rupees to account 1189"
+[2026-10-25 19:58:43] [RECEIVER] [SETTINGS] secure_mode=False
+[2026-10-25 19:58:48] [ATTACKER] [HELD] intercept: Holding message: "Send 5000 rupees to account 1122"
+[2026-10-25 19:58:48] [SENDER] [SENT] message='Send 5000 rupees to account 1122' signed=True
+[2026-10-25 19:58:53] [RECEIVER] [UNVERIFIED] message='Send 5000 rupees to account 112' reason='Security is OFF. Message accepted without any check.'
+[2026-10-25 19:58:53] [ATTACKER] [UNVERIFIED] modify: Modified message (kept old signature): "Send 5000 rupees to account 112"
+[2026-10-25 19:59:05] [SENDER] [SETTINGS] sign_enabled=False
+[2026-10-25 19:59:10] [ATTACKER] [HELD] intercept: Holding message: "Meeting at 5 PM today"
+[2026-10-25 19:59:10] [SENDER] [SENT] message='Meeting at 5 PM today' signed=False
+[2026-10-25 19:59:16] [RECEIVER] [UNVERIFIED] message='Meeting at 9 PM today' reason='Security is OFF. Message accepted without any check.'
+[2026-10-25 19:59:16] [ATTACKER] [UNVERIFIED] modify: Modified message (kept old signature): "Meeting at 9 PM today"

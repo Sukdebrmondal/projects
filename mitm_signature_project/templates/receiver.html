@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Receiver</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="role-receiver">
+
+  <div class="topbar">
+    <div class="badge">🛡️</div>
+    <div>
+      <h1>Secure Receiver</h1>
+      <div class="sub">127.0.0.1:5003 · verifies every message</div>
+    </div>
+    <div class="role-tag">RECEIVER</div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Control panel -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Verification control</h2>
+        <span class="hint">turn off to see the danger</span>
+      </div>
+      <div class="card-body">
+        <div class="switch on" id="secureSwitch">
+          <div class="track"></div>
+          <span class="lbl">Secure mode: <span id="secureText">ON</span></span>
+        </div>
+        <p style="font-size:13px;color:var(--text-dim);margin-top:10px">
+          When ON, Priya checks the signature, timestamp and nonce of every message.
+          When OFF, she accepts everything — even messages changed by the attacker.
+        </p>
+
+        <div class="stats" style="margin-top:18px">
+          <div class="stat ok"><div class="num" id="statAccepted">0</div><div class="lab">Accepted</div></div>
+          <div class="stat bad"><div class="num" id="statBlocked">0</div><div class="lab">Blocked</div></div>
+        </div>
+
+        <div class="btn-row" style="margin-top:16px">
+          <button class="ghost small" id="clearBtn">Clear inbox</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox -->
+    <div class="card">
+      <div class="card-head">
+        <h2>Inbox</h2>
+        <span class="hint" id="liveHint">live · updates automatically</span>
+      </div>
+      <div class="card-body">
+        <div class="msg-list" id="msgList">
+          <div class="empty">No messages yet. Waiting for Rahul…</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STATUS_STYLE = {
+      VALID:        { cls: "ok",   label: "VALID" },
+      UNVERIFIED:   { cls: "warn", label: "UNVERIFIED" },
+      NO_SIGNATURE: { cls: "bad",  label: "NO SIGNATURE" },
+      TAMPERED:     { cls: "bad",  label: "TAMPERED" },
+      EXPIRED:      { cls: "bad",  label: "EXPIRED" },
+      REPLAY:       { cls: "bad",  label: "REPLAY" },
+      BAD_FORMAT:   { cls: "bad",  label: "BAD FORMAT" },
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function toast(message, isError) {
+      const t = $("toast");
+      t.textContent = message;
+      t.className = "toast show" + (isError ? " err" : "");
+      setTimeout(() => { t.className = "toast"; }, 2200);
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function renderMessages(messages) {
+      const list = $("msgList");
+      if (!messages.length) {
+        list.innerHTML = '<div class="empty">No messages yet. Waiting for Rahul…</div>';
+        return;
+      }
+      list.innerHTML = messages.map(m => {
+        const s = STATUS_STYLE[m.status] || { cls: "info", label: m.status };
+        return `
+          <div class="msg ${s.cls}">
+            <div class="top">
+              <span class="who">${escapeHtml(m.sender)}</span>
+              <span class="badge-status ${s.cls}">${s.label}</span>
+              <span class="time">${m.time}</span>
+            </div>
+            <div class="text">${escapeHtml(m.message)}</div>
+            <div class="meta">sig: ${escapeHtml(m.signature)} · nonce: ${escapeHtml(m.nonce)}</div>
+            <div class="reason">${escapeHtml(m.reason)}</div>
+          </div>`;
+      }).join("");
+    }
+
+    async function refresh() {
+      try {
+        const res = await fetch("/api/state");
+        const data = await res.json();
+        const sw = $("secureSwitch");
+        sw.className = "switch " + (data.secure_mode ? "on" : "");
+        $("secureText").textContent = data.secure_mode ? "ON" : "OFF";
+        $("statAccepted").textContent = data.stats.accepted;
+        $("statBlocked").textContent = data.stats.blocked;
+        renderMessages(data.messages);
+      } catch (e) {
+        $("liveHint").textContent = "server offline";
+      }
+    }
+
+    $("secureSwitch").addEventListener("click", async () => {
+      const turningOn = !$("secureSwitch").classList.contains("on");
+      await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ secure_mode: turningOn }),
+      });
+      toast("Secure mode " + (turningOn ? "ON" : "OFF"));
+      refresh();
+    });
+
+    $("clearBtn").addEventListener("click", async () => {
+      await fetch("/api/clear", { method: "POST" });
+      toast("Inbox cleared");
+      refresh();
+    });
+
+    refresh();
+    setInterval(refresh, 1500);
+  </script>
+
+</body>
+</html>
