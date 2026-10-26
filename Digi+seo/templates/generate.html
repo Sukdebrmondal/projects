@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Create copies · QP Leak Detector{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1"><i class="bi bi-files me-2"></i>Create signed copies</h1>
+<p class="page-subtitle">Make a unique, invisible, signed copy of the question paper for every exam centre.</p>
+
+<!-- ================= Progress steps ================= -->
+<ol class="stepper">
+  <li class="{{ 'done' if results else 'active' }}">
+    <span class="num">{% if results %}<i class="bi bi-check"></i>{% else %}1{% endif %}</span>
+    <span class="label">Upload paper</span>
+  </li>
+  <li class="{{ 'done' if results else 'active' }}">
+    <span class="num">{% if results %}<i class="bi bi-check"></i>{% else %}2{% endif %}</span>
+    <span class="label">Add centres</span>
+  </li>
+  <li class="{{ 'active' if results else '' }}">
+    <span class="num">3</span>
+    <span class="label">Download copies</span>
+  </li>
+</ol>
+
+{% if results %}
+  <!-- ================= Results ================= -->
+  <div class="card border-success mb-4">
+    <div class="card-body p-4 d-flex flex-column flex-md-row align-items-md-center gap-3">
+      <i class="bi bi-check-circle-fill text-success result-icon"></i>
+      <div class="flex-grow-1">
+        <h2 class="h5 mb-1">{{ results|length }} signed {{ 'copy is' if results|length == 1 else 'copies are' }} ready</h2>
+        <div class="text-secondary small">
+          {{ paper_name }} &middot; Paper P{{ '%03d'|format(paper_id) }}
+        </div>
+      </div>
+      <a class="btn btn-success btn-lg" href="{{ url_for('download', paper_id=paper_id) }}">
+        <i class="bi bi-download me-1"></i> Download all (ZIP)
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card h-100"><div class="card-body">
+        <h3 class="h6 mb-3">Question paper</h3>
+        <img class="thumb" src="{{ preview }}" alt="Preview of the uploaded question paper">
+        <p class="small text-secondary mt-2 mb-0">All copies look exactly like this.</p>
+      </div></div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card h-100"><div class="card-body">
+        <h3 class="h6 mb-3">Copies created</h3>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr><th>Centre</th><th>Copy ID</th><th class="text-end">Status</th></tr>
+            </thead>
+            <tbody>
+              {% for r in results %}
+                <tr>
+                  <td>{{ '%02d'|format(r.centre_id) }} &middot; {{ r.centre_name }}</td>
+                  <td><code>{{ r.copy_id }}</code></td>
+                  <td class="text-end"><span class="badge text-bg-success"><i class="bi bi-check"></i> Signed</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="info-box mt-4">
+    <h3 class="h6"><i class="bi bi-lightbulb me-1"></i>What to do next</h3>
+    <ul class="small text-secondary mb-0">
+      <li>Unzip the file and send each centre <strong>only its own copy</strong>.</li>
+      <li>Send the PNG as a <strong>file or document</strong>, not as a compressed photo.</li>
+      <li>If a paper leaks, upload it on the <a href="{{ url_for('verify') }}">Verify a leak</a> page.</li>
+    </ul>
+  </div>
+
+  <div class="d-flex flex-wrap gap-2 mt-4">
+    <a class="btn btn-outline-primary" href="{{ url_for('generate') }}"><i class="bi bi-plus-lg me-1"></i>Create another paper</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('records') }}"><i class="bi bi-journal-text me-1"></i>View all records</a>
+  </div>
+
+{% else %}
+  <!-- ================= Form ================= -->
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" onsubmit="startLoading(this)">
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold" for="paper_name">1. Paper name</label>
+              <input class="form-control" id="paper_name" name="paper_name" maxlength="100"
+                     placeholder="e.g. Physics Semester Exam 2026"
+                     value="{{ form.get('paper_name', '') }}" required>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label fw-semibold" for="paper">2. Question paper image</label>
+              <div class="drop-zone" data-max-mb="10" data-error-target="paperError">
+                <input id="paper" name="paper" type="file" accept=".png,image/png" required>
+                <div data-empty>
+                  <i class="bi bi-cloud-arrow-up drop-icon"></i>
+                  <p class="mb-1 fw-semibold">Drag the PNG here, or click to choose</p>
+                  <p class="small text-secondary mb-0">PNG only &middot; maximum 10 MB</p>
+                </div>
+                <div data-filled class="d-none">
+                  <img data-file-preview class="d-none mb-2" alt="Selected file preview">
+                  <p class="mb-0 small fw-semibold text-break" data-file-name></p>
+                  <p class="small text-secondary mb-0">Click or drop another file to change it</p>
+                </div>
+              </div>
+              <div id="paperError" class="text-danger small mt-2 d-none"></div>
+            </div>
+
+            <div class="mb-4">
+              <div class="d-flex justify-content-between align-items-end">
+                <label class="form-label fw-semibold" for="centres">3. Exam centres</label>
+                <span class="badge text-bg-light border mb-2" id="centreCount">0 centres</span>
+              </div>
+              <textarea class="form-control" id="centres" name="centres" rows="6" required
+                        data-count-lines="centreCount"
+                        placeholder="Berhampore Girls College&#10;Krishnath College&#10;Jiaganj High School">{{ form.get('centres', '') }}</textarea>
+              <div class="form-text">Write one centre per line. Duplicates are skipped automatically.</div>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100" type="submit"
+                    data-loading-text="Creating signed copies...">
+              <i class="bi bi-shield-lock me-1"></i> Create signed copies
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-body p-4">
+          <h2 class="h6"><i class="bi bi-info-circle me-1"></i>Tips</h2>
+          <ul class="small text-secondary ps-3 mb-0">
+            <li class="mb-2">Use a clear PNG of the whole paper (a screenshot or export from Word/PDF).</li>
+            <li class="mb-2">Each centre receives a different copy, but all copies look identical.</li>
+            <li class="mb-2">The centre name, copy ID and a fingerprint of the paper are signed and hidden.</li>
+            <li>Creating copies takes a few seconds for many centres.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

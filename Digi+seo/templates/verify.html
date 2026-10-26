@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Verify a leak · QP Leak Detector{% endblock %}
+
+{% block content %}
+<h1 class="h3 mb-1"><i class="bi bi-search me-2"></i>Verify a suspected copy</h1>
+<p class="page-subtitle">Upload a leaked question paper to find out which centre it came from. No login needed.</p>
+
+{% if result %}
+  <!-- ================= Result ================= -->
+  <div class="card result-card border-{{ ui.color }} mb-4">
+    <div class="card-body p-4">
+      <div class="d-flex gap-3 align-items-start mb-4">
+        <i class="bi {{ ui.icon }} result-icon text-{{ ui.color }}"></i>
+        <div>
+          <h2 class="h5 mb-1">{{ ui.title }}</h2>
+          <p class="mb-0 text-secondary">{{ result.message }}</p>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-4">
+          <img class="thumb" src="{{ preview }}" alt="Preview of the uploaded image">
+          <p class="small text-secondary mt-2 mb-0 text-break"><i class="bi bi-file-earmark-image me-1"></i>{{ filename }}</p>
+        </div>
+
+        <div class="col-md-8">
+          {% if result.payload %}
+            {% if result.status == 'tampered' %}
+              <div class="alert alert-warning small py-2">
+                <i class="bi bi-exclamation-triangle me-1"></i>
+                The details below are only what the hidden data <strong>claims</strong>. They failed
+                verification and must not be trusted.
+              </div>
+            {% endif %}
+
+            <div class="table-responsive mb-3">
+              <table class="table table-sm align-middle mb-0">
+                <tr><th class="w-40">Centre</th>
+                    <td class="text-break">{{ result.payload.get('centre_id') }} &middot; {{ result.payload.get('centre_name') }}</td></tr>
+                <tr><th>Copy ID</th><td><code>{{ result.payload.get('copy_id') }}</code></td></tr>
+                <tr><th>Paper</th><td class="text-break">{{ result.payload.get('paper_name') }}</td></tr>
+                <tr><th>Created at</th><td>{{ result.payload.get('created_at') }}</td></tr>
+                <tr><th>Digital signature</th>
+                    <td>{% if result.signature_ok %}
+                          <span class="badge text-bg-success"><i class="bi bi-check"></i> Valid</span>
+                        {% else %}
+                          <span class="badge text-bg-danger"><i class="bi bi-x"></i> Invalid</span>
+                        {% endif %}</td></tr>
+                <tr><th>Paper content</th>
+                    <td>{% if result.hash_ok %}
+                          <span class="badge text-bg-success"><i class="bi bi-check"></i> Unchanged</span>
+                        {% else %}
+                          <span class="badge text-bg-danger"><i class="bi bi-x"></i> Edited</span>
+                        {% endif %}</td></tr>
+                {% if result.status == 'valid' %}
+                  <tr><th>Database record</th>
+                      <td>{% if record %}
+                            <span class="badge text-bg-success">Found</span>
+                          {% else %}
+                            <span class="badge text-bg-secondary">Not found (created outside the website)</span>
+                          {% endif %}</td></tr>
+                {% endif %}
+                <tr><th>Algorithm</th><td class="small">RSA-{{ key_size }} (PSS) + SHA-512</td></tr>
+              </table>
+            </div>
+          {% endif %}
+
+          <div class="info-box">
+            <h3 class="h6 mb-2"><i class="bi bi-chat-square-text me-1"></i>What this means</h3>
+            {% if result.status == 'valid' %}
+              <p class="small text-secondary mb-3">
+                The signature is genuine and the question paper has not been changed.
+                This copy was officially issued to the centre shown above.
+              </p>
+              <h3 class="h6 mb-2"><i class="bi bi-arrow-right-circle me-1"></i>What to do next</h3>
+              <p class="small text-secondary mb-0">
+                Report this centre to the examination authority and keep this file as evidence.
+              </p>
+            {% elif result.status == 'tampered' %}
+              <p class="small text-secondary mb-3">
+                {% if not result.signature_ok %}Someone changed or faked the hidden centre details. {% endif %}
+                {% if not result.hash_ok %}The visible question paper was edited after it was issued.{% endif %}
+              </p>
+              <h3 class="h6 mb-2"><i class="bi bi-arrow-right-circle me-1"></i>What to do next</h3>
+              <p class="small text-secondary mb-0">
+                Do not trust the centre shown. Try to get the original, unedited file and check it again.
+              </p>
+            {% else %}
+              <p class="small text-secondary mb-3">
+                This image does not contain any data from this system. It may be a different paper,
+                or the hidden data was lost through compression.
+              </p>
+              <h3 class="h6 mb-2"><i class="bi bi-arrow-right-circle me-1"></i>What to do next</h3>
+              <p class="small text-secondary mb-0">
+                {% if is_jpeg %}This is a JPG image, which usually destroys the hidden data. {% endif %}
+                Ask for the original PNG file, ideally shared as a document rather than a photo.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+<!-- ================= Upload form ================= -->
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <h2 class="h6 mb-3">{{ 'Check another file' if result else 'Upload the suspected paper' }}</h2>
+        <form method="post" enctype="multipart/form-data" onsubmit="startLoading(this)">
+          <div class="drop-zone mb-3" data-max-mb="10" data-error-target="imageError">
+            <input id="image" name="image" type="file"
+                   accept=".png,.jpg,.jpeg,image/png,image/jpeg" required
+                   aria-label="Choose the leaked question paper image">
+            <div data-empty>
+              <i class="bi bi-cloud-arrow-up drop-icon"></i>
+              <p class="mb-1 fw-semibold">Drag the image here, or click to choose</p>
+              <p class="small text-secondary mb-0">PNG recommended &middot; JPG accepted &middot; max 10 MB</p>
+            </div>
+            <div data-filled class="d-none">
+              <img data-file-preview class="d-none mb-2" alt="Selected file preview">
+              <p class="mb-0 small fw-semibold text-break" data-file-name></p>
+              <p class="small text-secondary mb-0">Click or drop another file to change it</p>
+            </div>
+          </div>
+          <div id="imageError" class="text-danger small mb-3 d-none"></div>
+
+          <button class="btn btn-primary btn-lg w-100" type="submit" data-loading-text="Checking...">
+            <i class="bi bi-shield-check me-1"></i> Verify now
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-body p-4">
+        <h2 class="h6 mb-2">What the colours mean</h2>
+        <div class="legend-item">
+          <span class="legend-dot bg-success"></span>
+          <div><strong>Green</strong>
+            <div class="small text-secondary">Genuine copy. The source centre is shown.</div></div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot bg-warning"></span>
+          <div><strong>Yellow</strong>
+            <div class="small text-secondary">Tampered. The hidden data or the paper was changed.</div></div>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot bg-danger"></span>
+          <div><strong>Red</strong>
+            <div class="small text-secondary">No hidden data. Not from this system, or compressed.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

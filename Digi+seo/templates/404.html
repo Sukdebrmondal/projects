@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Page not found · QP Leak Detector{% endblock %}
+
+{% block content %}
+<div class="text-center py-5">
+  <div class="icon-circle mx-auto mb-3"><i class="bi bi-signpost-split"></i></div>
+  <h1 class="h3">Page not found</h1>
+  <p class="text-secondary mb-4">The page you are looking for does not exist or has moved.</p>
+  <a class="btn btn-primary me-2" href="{{ url_for('index') }}"><i class="bi bi-house me-1"></i>Go home</a>
+  <a class="btn btn-outline-secondary" href="{{ url_for('verify') }}"><i class="bi bi-search me-1"></i>Verify a leak</a>
+</div>
+{% endblock %}

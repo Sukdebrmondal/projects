@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Records · QP Leak Detector{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h4 mb-0"><i class="bi bi-journal-text"></i> Generated copies</h1>
+  <span class="badge text-bg-secondary">{{ copies|length }} total</span>
+</div>
+
+{% if copies %}
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr><th>Copy ID</th><th>Paper</th><th>Centre</th><th>Created</th></tr>
+        </thead>
+        <tbody>
+          {% for c in copies %}
+            <tr>
+              <td><code>{{ c.copy_id }}</code></td>
+              <td>{{ c.paper_name }}</td>
+              <td>{{ '%02d'|format(c.centre_id) }} &middot; {{ c.centre_name }}</td>
+              <td class="small text-secondary">{{ c.created_at }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="text-center bg-white border rounded-3 p-5">
+    <i class="bi bi-inbox fs-1 text-secondary"></i>
+    <h2 class="h5 mt-3">No copies yet</h2>
+    <p class="text-secondary">Create signed copies of a question paper to see them here.</p>
+    <a class="btn btn-primary" href="{{ url_for('generate') }}">Create copies</a>
+  </div>
+{% endif %}
+{% endblock %}

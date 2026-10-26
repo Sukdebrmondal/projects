@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% block title %}Home · QP Leak Detector{% endblock %}
+
+{% block content %}
+<!-- ================= Hero ================= -->
+<section class="hero p-4 p-md-5 mb-5">
+  <div class="row g-4 align-items-center">
+    <div class="col-lg-7">
+      <span class="badge rounded-pill text-bg-light border mb-3">
+        LSB steganography &middot; RSA-1024 &middot; SHA-512
+      </span>
+      <h1 class="display-6 fw-semibold mb-3">Find out where a leaked question paper came from</h1>
+      <p class="lead text-secondary mb-4">
+        Every exam centre gets a copy that looks exactly the same, but each one carries a hidden,
+        digitally signed identity. If a paper leaks, upload it here to see which centre it came from.
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('verify') }}" class="btn btn-primary btn-lg">
+          <i class="bi bi-search me-1"></i> Verify a leak
+        </a>
+        <a href="{{ url_for('generate') }}" class="btn btn-outline-dark btn-lg">
+          <i class="bi bi-files me-1"></i> Create copies
+        </a>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="h6 mb-2">Three possible results</h2>
+          <div class="legend-item">
+            <span class="legend-dot bg-success"></span>
+            <div><strong>Green: genuine</strong>
+              <div class="small text-secondary">The copy is real and shows which centre it was issued to.</div></div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot bg-warning"></span>
+            <div><strong>Yellow: tampered</strong>
+              <div class="small text-secondary">Someone changed the hidden data or the question paper.</div></div>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot bg-danger"></span>
+            <div><strong>Red: no data</strong>
+              <div class="small text-secondary">The image was not created by this system, or it was compressed.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= How it works ================= -->
+<section class="mb-5">
+  <h2 class="h4 mb-1">How it works</h2>
+  <p class="page-subtitle">Three simple steps, no technical knowledge needed.</p>
+  <div class="row g-3">
+    <div class="col-md-4">
+      <div class="card h-100"><div class="card-body p-4">
+        <div class="icon-circle mb-3"><i class="bi bi-upload"></i></div>
+        <div class="step-number">Step 1</div>
+        <h3 class="h6 mt-1">Upload the paper</h3>
+        <p class="small text-secondary mb-0">
+          The exam admin uploads the question paper as a PNG image and lists the exam centres.
+        </p>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100"><div class="card-body p-4">
+        <div class="icon-circle mb-3"><i class="bi bi-fingerprint"></i></div>
+        <div class="step-number">Step 2</div>
+        <h3 class="h6 mt-1">Sign and hide</h3>
+        <p class="small text-secondary mb-0">
+          Each centre's details are signed with RSA-1024 and hidden invisibly inside the image pixels.
+        </p>
+      </div></div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100"><div class="card-body p-4">
+        <div class="icon-circle mb-3"><i class="bi bi-search"></i></div>
+        <div class="step-number">Step 3</div>
+        <h3 class="h6 mt-1">Verify a leak</h3>
+        <p class="small text-secondary mb-0">
+          Upload a leaked copy. The system reveals the source centre and detects any forgery.
+        </p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= Who does what ================= -->
+<section class="mb-5">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card h-100"><div class="card-body p-4 d-flex gap-3">
+        <div class="icon-circle"><i class="bi bi-person-lock"></i></div>
+        <div>
+          <h3 class="h6">For exam administrators</h3>
+          <p class="small text-secondary">Log in to create signed copies for every centre and download them as a ZIP file.</p>
+          <a href="{{ url_for('generate') }}" class="btn btn-sm btn-outline-primary">Create copies</a>
+        </div>
+      </div></div>
+    </div>
+    <div class="col-md-6">
+      <div class="card h-100"><div class="card-body p-4 d-flex gap-3">
+        <div class="icon-circle"><i class="bi bi-people"></i></div>
+        <div>
+          <h3 class="h6">For anyone checking a leak</h3>
+          <p class="small text-secondary">No login needed. Upload the suspected question paper and see the result instantly.</p>
+          <a href="{{ url_for('verify') }}" class="btn btn-sm btn-outline-primary">Verify a leak</a>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section>
+  <h2 class="h4 mb-3">Frequently asked questions</h2>
+  <div class="accordion" id="faq">
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q1">
+          Can anyone see the hidden information?
+        </button>
+      </h3>
+      <div id="q1" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body small text-secondary">
+          No. The data is stored in the last bit of each colour value (LSB). This changes a colour by at
+          most 1 out of 255, which the human eye cannot notice.
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q2">
+          Can someone fake the centre name to blame another centre?
+        </button>
+      </h3>
+      <div id="q2" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body small text-secondary">
+          No. The hidden data is signed with the administrator's private RSA key. Without that key a valid
+          signature cannot be created, so any fake data shows a yellow "tampered" result.
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q3">
+          What if someone edits a question in the paper?
+        </button>
+      </h3>
+      <div id="q3" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body small text-secondary">
+          A SHA-512 hash of the paper is signed together with the centre details. If even one word is changed,
+          the hash no longer matches and the result is "tampered".
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q4">
+          Why PNG only? What about WhatsApp photos?
+        </button>
+      </h3>
+      <div id="q4" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body small text-secondary">
+          PNG is lossless, so every bit is kept. JPG and WhatsApp "photo" sharing compress the image and
+          change pixel values, which destroys the hidden data. Files shared as a "document" stay intact.
+        </div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h3 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#q5">
+          Do I need to install anything?
+        </button>
+      </h3>
+      <div id="q5" class="accordion-collapse collapse" data-bs-parent="#faq">
+        <div class="accordion-body small text-secondary">
+          No. Everything works in a normal web browser on a computer or a mobile phone.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
