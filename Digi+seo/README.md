@@ -65,4 +65,4 @@ python tools/psnr.py
 
 ## Author
 
-Your Name, Your College, 2026
+Sukdeb Mondal, Ramakrishna Mission Vidyamandira, belur math, 2026
