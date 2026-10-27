@@ -286,7 +286,7 @@ def download(paper_id):
     if not os.path.exists(path):
         flash("That ZIP file was not found. Please create the copies again.", "danger")
         return redirect(url_for("generate"))
-    return send_file(path, as_attachment=True,
+    return send_file(path, mimetype="application/zip", as_attachment=True,
                      download_name=f"QP-P{paper_id:03d}-copies.zip")
 
 
