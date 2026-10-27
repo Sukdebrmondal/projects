@@ -1,17 +1,62 @@
-/* ---------- Theme ---------- */
-:root {
-  --brand: #2453d6;
-  --brand-soft: #eaf0ff;
-  --line: #e3e7ef;
+/* =========================================================
+   Theme colours
+   Light values are the default. Dark values apply when the
+   theme button sets <html data-bs-theme="dark">.
+   ========================================================= */
+:root,
+[data-bs-theme="light"] {
+  --brand: #2453d6;           /* brand text, icons, active borders */
+  --brand-solid: #2453d6;     /* filled brand backgrounds with white text */
+  --brand-soft: #eaf0ff;      /* soft tint behind icons and drop zone hover */
+  --page-bg: #f5f7fb;         /* page background */
+  --surface: #ffffff;         /* hero, stepper items, image frames */
+  --surface-soft: #f8fafc;    /* info boxes */
+  --drop-bg: #fafbfe;         /* upload box */
+  --drop-border: #c4ccdb;
+  --line: #e3e7ef;            /* card and divider borders */
+  --muted: #667085;           /* subtitles, inactive steps */
+  --table-head: #475467;      /* table header text */
+  --num-bg: #eef1f6;          /* stepper number circle */
   --radius-lg: 14px;
 }
 
+[data-bs-theme="dark"] {
+  --brand: #8aa4ff;
+  --brand-solid: #3d63e6;
+  --brand-soft: rgba(110, 142, 255, 0.16);
+  --page-bg: #0f1218;
+  --surface: #1a1f29;
+  --surface-soft: #151a22;
+  --drop-bg: #151a22;
+  --drop-border: #3b4455;
+  --line: #2c3340;
+  --muted: #9aa4b2;
+  --table-head: #c3cad5;
+  --num-bg: #2b3140;
+
+  /* Make Bootstrap cards, inputs and tables use the same dark surface */
+  --bs-body-bg: #1a1f29;
+  --bs-body-bg-rgb: 26, 31, 41;
+}
+
+/* ---------- Page ---------- */
 body {
-  background: #f5f7fb;
+  background: var(--page-bg);
 }
 
 main.container {
   max-width: 1080px;
+}
+
+/* Smooth colour change when switching theme */
+body,
+.navbar,
+footer,
+.card,
+.hero,
+.stepper li,
+.info-box {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
 /* ---------- Navbar ---------- */
@@ -19,7 +64,7 @@ main.container {
   width: 32px;
   height: 32px;
   border-radius: 9px;
-  background: var(--brand);
+  background: var(--brand-solid);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -39,7 +84,7 @@ main.container {
 }
 
 .hero {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
 }
@@ -66,7 +111,7 @@ main.container {
 }
 
 .page-subtitle {
-  color: #667085;
+  color: var(--muted);
   margin-bottom: 1.5rem;
 }
 
@@ -85,18 +130,18 @@ main.container {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 0.75rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
   font-size: 0.9rem;
-  color: #667085;
+  color: var(--muted);
 }
 
 .stepper .num {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: #eef1f6;
+  background: var(--num-bg);
   font-size: 0.8rem;
   font-weight: 600;
   display: inline-flex;
@@ -111,7 +156,7 @@ main.container {
 }
 
 .stepper li.active .num {
-  background: var(--brand);
+  background: var(--brand-solid);
   color: #fff;
 }
 
@@ -123,12 +168,12 @@ main.container {
 /* ---------- Drag and drop upload ---------- */
 .drop-zone {
   position: relative;
-  border: 2px dashed #c4ccdb;
+  border: 2px dashed var(--drop-border);
   border-radius: var(--radius-lg);
-  background: #fafbfe;
+  background: var(--drop-bg);
   padding: 2rem 1rem;
   text-align: center;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background-color 0.15s;
 }
 
 .drop-zone:hover,
@@ -152,6 +197,7 @@ main.container {
   color: var(--brand);
 }
 
+/* Paper previews stay on white, like real paper, in both themes */
 .drop-zone img {
   max-height: 180px;
   max-width: 100%;
@@ -174,13 +220,13 @@ main.container {
   width: 100%;
   max-height: 340px;
   object-fit: contain;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 10px;
 }
 
 .info-box {
-  background: #f8fafc;
+  background: var(--surface-soft);
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 1rem;
@@ -209,7 +255,7 @@ main.container {
 /* ---------- Tables ---------- */
 .table th {
   font-weight: 600;
-  color: #475467;
+  color: var(--table-head);
 }
 
 .w-40 {
@@ -218,6 +264,36 @@ main.container {
 
 code {
   font-size: 0.88em;
+}
+
+/* =========================================================
+   Dark theme fixes for Bootstrap classes that stay light
+   (bg-white, table-light, text-bg-light, btn-outline-dark)
+   ========================================================= */
+[data-bs-theme="dark"] .bg-white {
+  background-color: var(--surface) !important;
+}
+
+[data-bs-theme="dark"] .table-light {
+  --bs-table-bg: #232a36;
+  --bs-table-color: var(--bs-body-color);
+  --bs-table-border-color: var(--line);
+}
+
+[data-bs-theme="dark"] .text-bg-light {
+  background-color: var(--num-bg) !important;
+  color: #e6e9ef !important;
+}
+
+[data-bs-theme="dark"] .btn-outline-dark {
+  --bs-btn-color: #e6e9ef;
+  --bs-btn-border-color: #6c757d;
+  --bs-btn-hover-color: #11151c;
+  --bs-btn-hover-bg: #e6e9ef;
+  --bs-btn-hover-border-color: #e6e9ef;
+  --bs-btn-active-color: #11151c;
+  --bs-btn-active-bg: #e6e9ef;
+  --bs-btn-active-border-color: #e6e9ef;
 }
 
 /* ---------- Small screens ---------- */
