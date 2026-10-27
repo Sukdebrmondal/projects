@@ -66,3 +66,18 @@ python tools/psnr.py
 ## Author
 
 Sukdeb Mondal, Ramakrishna Mission Vidyamandira, belur math, 2026
+
+
+
+
+
+<!-- 
+1. Activate ENV
+2. Generate KEY (python setup_keys.py)
+3. admin password set (python create_admin.py)
+4. start the website (python app.py)
+
+
+
+
+ -->
