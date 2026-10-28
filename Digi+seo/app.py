@@ -9,6 +9,7 @@ Then open http://127.0.0.1:5000 in the browser.
 import base64
 import io
 import os
+import secrets
 import zipfile
 from datetime import datetime
 from functools import wraps
@@ -77,7 +78,7 @@ except (FileNotFoundError, ValueError) as exc:
     raise SystemExit("RSA keys missing or broken. Run 'python setup_keys.py' first.") from exc
 
 
-# ---------------- Helpers ----------------
+# ---------------- Security helpers ----------------
 def login_required(view):
     """Send visitors to the login page if they are not logged in as admin."""
     @wraps(view)
@@ -89,6 +90,29 @@ def login_required(view):
     return wrapper
 
 
+def get_csrf_token() -> str:
+    """A random secret per session, placed in every delete form."""
+    token = session.get("csrf_token")
+    if not token:
+        token = secrets.token_hex(16)
+        session["csrf_token"] = token
+    return token
+
+
+def csrf_ok() -> bool:
+    """True only if the form sent back the same secret that is in the session."""
+    sent = request.form.get("csrf_token", "")
+    expected = session.get("csrf_token", "")
+    return bool(sent) and bool(expected) and secrets.compare_digest(sent, expected)
+
+
+@app.context_processor
+def inject_csrf_token():
+    """Lets templates call {{ csrf_token() }}."""
+    return {"csrf_token": get_csrf_token}
+
+
+# ---------------- Helpers ----------------
 def get_extension(filename: str) -> str:
     return os.path.splitext(filename or "")[1].lower()
 
@@ -135,6 +159,33 @@ def build_copy_id(paper_id: int, centre_id: int) -> str:
 
 def zip_path(paper_id: int) -> str:
     return os.path.join(GENERATED_DIR, f"paper_{paper_id:03d}.zip")
+
+
+def delete_zip(paper_id: int):
+    """Remove a paper's ZIP file if it exists."""
+    path = zip_path(paper_id)
+    if os.path.exists(path):
+        os.remove(path)
+
+
+def remove_from_zip(paper_id: int, copy_id: str):
+    """
+    Remove one copy from a paper's ZIP.
+    ZIP files cannot delete an entry in place, so the ZIP is rewritten
+    without that file and then swapped in.
+    """
+    path = zip_path(paper_id)
+    if not os.path.exists(path):
+        return
+
+    target = f"{copy_id}.png"
+    temp_path = path + ".tmp"
+    with zipfile.ZipFile(path) as src, \
+            zipfile.ZipFile(temp_path, "w", zipfile.ZIP_DEFLATED) as dst:
+        for item in src.infolist():
+            if item.filename != target:
+                dst.writestr(item, src.read(item.filename))
+    os.replace(temp_path, path)
 
 
 def make_thumbnail(pixels, max_size: int = 480) -> str:
@@ -294,6 +345,46 @@ def download(paper_id):
 @login_required
 def records():
     return render_template("records.html", copies=db.list_copies())
+
+
+@app.route("/records/copy/<copy_id>/delete", methods=["POST"])
+@login_required
+def delete_copy_record(copy_id):
+    """Delete one copy from the database and from its paper's ZIP."""
+    if not csrf_ok():
+        flash("The request expired. Please refresh the page and try again.", "danger")
+        return redirect(url_for("records"))
+
+    paper_id, paper_removed = db.delete_copy(copy_id)
+    if paper_id is None:
+        flash("That record was not found. It may already be deleted.", "warning")
+    else:
+        if paper_removed:
+            delete_zip(paper_id)                   # last copy gone: remove the whole ZIP
+        else:
+            remove_from_zip(paper_id, copy_id)
+        flash(f"Record {copy_id} was deleted.", "success")
+
+    return redirect(url_for("records"))
+
+
+@app.route("/records/paper/<int:paper_id>/delete", methods=["POST"])
+@login_required
+def delete_paper_record(paper_id):
+    """Delete a paper, all of its copies and its ZIP file."""
+    if not csrf_ok():
+        flash("The request expired. Please refresh the page and try again.", "danger")
+        return redirect(url_for("records"))
+
+    deleted = db.delete_paper(paper_id)
+    delete_zip(paper_id)
+
+    if deleted:
+        flash(f"Paper P{paper_id:03d} and its {deleted} copies were deleted.", "success")
+    else:
+        flash("That paper was not found. It may already be deleted.", "warning")
+
+    return redirect(url_for("records"))
 
 
 # ---------------- Error pages ----------------

@@ -116,6 +116,18 @@ def add_paper(paper_name: str, source_file: str) -> int:
         return cur.lastrowid
 
 
+def delete_paper(paper_id: int) -> int:
+    """
+    Delete a paper and all of its copies.
+    Returns how many copies were deleted (0 if the paper did not exist).
+    """
+    with get_db() as conn:
+        cur = conn.execute("DELETE FROM copies WHERE paper_id = ?", (paper_id,))
+        deleted_copies = cur.rowcount
+        conn.execute("DELETE FROM papers WHERE paper_id = ?", (paper_id,))
+        return deleted_copies
+
+
 # ---------------- Copies ----------------
 def add_copy(copy_id: str, paper_id: int, centre_id: int,
              image_hash: str, created_at: str):
@@ -125,6 +137,33 @@ def add_copy(copy_id: str, paper_id: int, centre_id: int,
             "VALUES (?, ?, ?, ?, ?)",
             (copy_id, paper_id, centre_id, image_hash, created_at),
         )
+
+
+def delete_copy(copy_id: str):
+    """
+    Delete one copy record.
+    Returns (paper_id, paper_removed):
+      - paper_id is None if the copy did not exist
+      - paper_removed is True if this was the last copy, so the paper row
+        was deleted as well
+    """
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT paper_id FROM copies WHERE copy_id = ?", (copy_id,)
+        ).fetchone()
+        if row is None:
+            return None, False
+
+        paper_id = row["paper_id"]
+        conn.execute("DELETE FROM copies WHERE copy_id = ?", (copy_id,))
+
+        remaining = conn.execute(
+            "SELECT COUNT(*) AS n FROM copies WHERE paper_id = ?", (paper_id,)
+        ).fetchone()["n"]
+
+        if remaining == 0:
+            conn.execute("DELETE FROM papers WHERE paper_id = ?", (paper_id,))
+        return paper_id, remaining == 0
 
 
 _COPY_QUERY = """

@@ -262,3 +262,69 @@ def test_verify_rejects_file_that_is_not_an_image(client):
 def test_verify_rejects_wrong_file_type(client):
     response = verify(client, io.BytesIO(b"some text"), "notes.txt")
     assert b"Unsupported file type" in response.data
+
+# ================= Delete records =================
+def set_csrf(client, token="test-token"):
+    """Put a known CSRF token in the test session and return it."""
+    with client.session_transaction() as sess:
+        sess["csrf_token"] = token
+    return token
+
+
+def test_delete_copy_removes_record_and_zip_entry(client):
+    login(client)
+    generate(client)
+    target = db.list_copies()[0]["copy_id"]
+    token = set_csrf(client)
+
+    response = client.post(f"/records/copy/{target}/delete",
+                           data={"csrf_token": token}, follow_redirects=True)
+    assert f"Record {target} was deleted.".encode() in response.data
+
+    remaining = [c["copy_id"] for c in db.list_copies()]
+    assert target not in remaining
+    assert len(remaining) == 1
+
+    with zipfile.ZipFile(os.path.join(app_module.GENERATED_DIR, "paper_001.zip")) as zf:
+        names = zf.namelist()
+    assert f"{target}.png" not in names
+    assert len(names) == 1
+
+
+def test_deleting_last_copy_removes_paper_and_zip(client):
+    login(client)
+    generate(client, centres="Krishnath College")
+    target = db.list_copies()[0]["copy_id"]
+    token = set_csrf(client)
+
+    client.post(f"/records/copy/{target}/delete", data={"csrf_token": token})
+    assert db.list_copies() == []
+    assert not os.path.exists(os.path.join(app_module.GENERATED_DIR, "paper_001.zip"))
+
+
+def test_delete_paper_removes_all_copies_and_zip(client):
+    login(client)
+    generate(client)
+    token = set_csrf(client)
+
+    response = client.post("/records/paper/1/delete",
+                           data={"csrf_token": token}, follow_redirects=True)
+    assert b"and its 2 copies were deleted" in response.data
+    assert db.list_copies() == []
+    assert not os.path.exists(os.path.join(app_module.GENERATED_DIR, "paper_001.zip"))
+
+
+def test_delete_without_csrf_token_is_refused(client):
+    login(client)
+    generate(client)
+    target = db.list_copies()[0]["copy_id"]
+
+    response = client.post(f"/records/copy/{target}/delete", data={}, follow_redirects=True)
+    assert b"The request expired" in response.data
+    assert len(db.list_copies()) == 2
+
+
+def test_delete_needs_login(client):
+    response = client.post("/records/paper/1/delete")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]

@@ -2,37 +2,124 @@
 {% block title %}Records · QP Leak Detector{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-  <h1 class="h4 mb-0"><i class="bi bi-journal-text"></i> Generated copies</h1>
-  <span class="badge text-bg-secondary">{{ copies|length }} total</span>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1"><i class="bi bi-journal-text me-2"></i>Records</h1>
+    <p class="page-subtitle mb-0">Every signed copy created on this website.</p>
+  </div>
+  {% if copies %}
+    <div class="input-group" style="max-width: 360px;">
+      <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+      <input type="search" class="form-control" placeholder="Search centre, paper or copy ID"
+             aria-label="Search records" data-filter=".record-row" data-filter-empty="noMatch">
+    </div>
+  {% endif %}
 </div>
 
 {% if copies %}
-  <div class="card shadow-sm">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr><th>Copy ID</th><th>Paper</th><th>Centre</th><th>Created</th></tr>
-        </thead>
-        <tbody>
-          {% for c in copies %}
-            <tr>
-              <td><code>{{ c.copy_id }}</code></td>
-              <td>{{ c.paper_name }}</td>
-              <td>{{ '%02d'|format(c.centre_id) }} &middot; {{ c.centre_name }}</td>
-              <td class="small text-secondary">{{ c.created_at }}</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  {% set groups = copies|groupby('paper_id') %}
+
+  <!-- ================= Summary ================= -->
+  <div class="row g-3 mb-4">
+    <div class="col-4">
+      <div class="card"><div class="card-body text-center py-3">
+        <div class="h4 mb-0">{{ groups|length }}</div>
+        <div class="small text-secondary">Papers</div>
+      </div></div>
+    </div>
+    <div class="col-4">
+      <div class="card"><div class="card-body text-center py-3">
+        <div class="h4 mb-0">{{ copies|map(attribute='centre_id')|unique|list|length }}</div>
+        <div class="small text-secondary">Centres</div>
+      </div></div>
+    </div>
+    <div class="col-4">
+      <div class="card"><div class="card-body text-center py-3">
+        <div class="h4 mb-0">{{ copies|length }}</div>
+        <div class="small text-secondary">Copies</div>
+      </div></div>
     </div>
   </div>
+
+  <!-- ================= One card per paper ================= -->
+  {% for paper_id, items in groups|reverse %}
+    <div class="card mb-3" data-filter-group>
+      <div class="card-header bg-white d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3">
+        <div>
+          <div class="fw-semibold">{{ items[0].paper_name }}</div>
+          <div class="small text-secondary">
+            Paper P{{ '%03d'|format(paper_id) }} &middot; {{ items|length }} copies &middot; {{ items[0].created_at }}
+          </div>
+        </div>
+
+        <div class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('download', paper_id=paper_id) }}">
+            <i class="bi bi-download me-1"></i>ZIP
+          </a>
+          <form method="post" action="{{ url_for('delete_paper_record', paper_id=paper_id) }}"
+                onsubmit="return confirm('Delete paper P{{ '%03d'|format(paper_id) }} and all {{ items|length }} copies? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash me-1"></i>Delete paper
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Centre</th>
+              <th>Copy ID</th>
+              <th class="d-none d-md-table-cell">Created</th>
+              <th class="text-end">Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in items %}
+              <tr class="record-row"
+                  data-search="{{ (c.copy_id ~ ' ' ~ c.centre_name ~ ' ' ~ c.paper_name)|lower }}">
+                <td>{{ '%02d'|format(c.centre_id) }} &middot; {{ c.centre_name }}</td>
+                <td><code>{{ c.copy_id }}</code></td>
+                <td class="small text-secondary d-none d-md-table-cell">{{ c.created_at }}</td>
+                <td class="text-end">
+                  <form method="post" class="d-inline"
+                        action="{{ url_for('delete_copy_record', copy_id=c.copy_id) }}"
+                        onsubmit="return confirm('Delete record {{ c.copy_id }}? This cannot be undone.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                            title="Delete this record" aria-label="Delete {{ c.copy_id }}">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% endfor %}
+
+  <div id="noMatch" class="text-center text-secondary py-5 d-none">
+    <i class="bi bi-search fs-2"></i>
+    <p class="mt-2 mb-0">No records match your search.</p>
+  </div>
+
+  <p class="small text-secondary mt-4 mb-0">
+    <i class="bi bi-info-circle me-1"></i>
+    Deleting a record removes it from the database and the ZIP file. A copy that was already
+    sent to a centre still carries a valid signature, so it will still verify as genuine,
+    but the database record will show as "Not found".
+  </p>
+
 {% else %}
-  <div class="text-center bg-white border rounded-3 p-5">
-    <i class="bi bi-inbox fs-1 text-secondary"></i>
-    <h2 class="h5 mt-3">No copies yet</h2>
-    <p class="text-secondary">Create signed copies of a question paper to see them here.</p>
-    <a class="btn btn-primary" href="{{ url_for('generate') }}">Create copies</a>
+  <div class="text-center bg-white border rounded-4 p-5">
+    <div class="icon-circle mx-auto mb-3"><i class="bi bi-inbox"></i></div>
+    <h2 class="h5">No copies yet</h2>
+    <p class="text-secondary">Create signed copies of a question paper and they will appear here.</p>
+    <a class="btn btn-primary" href="{{ url_for('generate') }}"><i class="bi bi-files me-1"></i>Create copies</a>
   </div>
 {% endif %}
 {% endblock %}
