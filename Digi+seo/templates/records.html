@@ -52,18 +52,20 @@
           </div>
         </div>
 
+                {% set paper_code = 'P%03d'|format(paper_id) %}
         <div class="d-flex gap-2">
           <a class="btn btn-sm btn-outline-success" href="{{ url_for('download', paper_id=paper_id) }}">
             <i class="bi bi-download me-1"></i>ZIP
           </a>
           <form method="post" action="{{ url_for('delete_paper_record', paper_id=paper_id) }}"
-                onsubmit="return confirm('Delete paper P{{ '%03d'|format(paper_id) }} and all {{ items|length }} copies? This cannot be undone.');">
+                onsubmit="return confirm('Delete paper {{ paper_code }} and all {{ items|length }} copies? This cannot be undone.');">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-sm btn-outline-danger">
               <i class="bi bi-trash me-1"></i>Delete paper
             </button>
           </form>
         </div>
+        
       </div>
 
       <div class="table-responsive">
